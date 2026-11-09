@@ -1,8 +1,8 @@
 # AI Korea Club Skills
 
-**[Stop the AI Slop] 한국어 쓰레드·인스타·쇼츠 운영 스킬 팩.** AI가 쓴 티 나는 글을 실제 글 185편으로 검증한 규칙으로 고칩니다. 검사 스크립트 8개는 Node만 있으면 돌아가고, 감점마다 근거를 같이 말합니다. 클로드 코드·코덱스·커서·안티그래비티 등 [Agent Skills](https://agentskills.io) 형식을 읽는 도구 어디서나 씁니다.
+**[Stop the AI Slop] 한국어 쓰레드·인스타·쇼츠 운영 스킬 팩.** AI가 쓴 티 나는 글을 우리 글 258편과 외부 2,800여 편으로 검증한 규칙으로 고칩니다. 검사 스크립트 8개는 Node만 있으면 돌아가고, 감점마다 근거를 같이 말합니다. 클로드 코드·코덱스·커서·안티그래비티 등 [Agent Skills](https://agentskills.io) 형식을 읽는 도구 어디서나 씁니다.
 
-Agent skills that run a Korean SNS account (Threads, Instagram Reels/carousels, YouTube Shorts): post, reply, script, caption, title, plan, audit, de-AI. Part of the Stop the AI Slop series. The two main checkers were calibrated on 185 of our own posts (score vs. views rank correlation 0.28 for Threads, 0.49 for Reels, 0.58 vs. saves) and every deduction prints the evidence behind it.
+Agent skills that run a Korean SNS account (Threads, Instagram Reels/carousels, YouTube Shorts): post, reply, script, caption, title, plan, audit, de-AI. Part of the Stop the AI Slop series. Three checkers were calibrated on 258 of our own posts plus 2,839 outside posts (297 Threads posts from 25 Korean accounts, 228 Shorts scripts and 2,314 Shorts titles from 23 Korean channels), keeping only rules that point the same way in both. Every deduction prints the evidence behind it, and the docs say plainly how weak or strong each signal is.
 
 ## 30초 설치 / Install
 
@@ -14,28 +14,35 @@ npx skills add aikoreaclub/skills --skill th-post       # 하나만 / one
 설치 뒤 `skills/sns-plan/references/voice.md` 를 `~/.claude/sns/voice.md` 로 복사해 10분만 채우세요. 모든 스킬이 그 파일로 당신 계정의 말투와 독자를 압니다.
 
 ## 검사기 점수가 실제 성과를 따라가는지 확인했습니다
-검사기를 우리 계정 글에 그대로 돌려 봤어요. 처음 만든 판은 점수와 조회가 따로 놀아서(순위상관 0.05) 버렸고, 실제로 차이가 난 항목에 무게를 다시 실은 판이 지금 들어 있어요.
+검사기를 우리 세 계정 글과 외부 계정 글에 그대로 돌려 봤어요. 처음 만든 판은 점수와 조회가 따로 놀아서 버렸고, 우리 자료로만 맞춘 둘째 판은 외부에서 안 맞아서 또 버렸어요. 지금 판은 양쪽에서 같은 방향인 항목에 무게를 실은 셋째 판이에요.
 
-**쓰레드 글 검사기 (93편)** — 점수와 조회 배수의 순위상관 0.28. 기간을 반으로 나눠도 같은 방향(0.41 · 0.19)
+**쓰레드 글 검사기 (우리 120편 + 외부 25개 계정 297편)** — 점수와 조회 배수의 순위상관 우리 0.11 · 외부 0.15. 방향은 맞지만 약해요
 
-| 점수대 | 편수 | 같은 시기 대비 조회 |
+| 점수대 | 편수 | 평소 대비 조회 |
 |---|---|---|
-| 85점 이상 | 7편 | 2.87배 |
-| 65~84점 | 45편 | 1.26배 |
-| 65점 미만 | 41편 | 0.67배 |
+| 85점 이상 | 우리 18편 · 외부 7편 | 1.37배 · 3.07배 |
+| 65~84점 | 78편 · 145편 | 1.19배 · 1.05배 |
+| 65점 미만 | 24편 · 145편 | 0.75배 · 0.87배 |
 
-**릴스 대본 검사기 (92편)** — 순위상관 조회 0.49 · 저장 0.58. 기간을 반으로 나눠도 같은 방향(0.59 · 0.37)
+**릴스·쇼츠 대본 검사기 (우리 138편 + 외부 쇼츠 23개 채널 228편)** — 순위상관 우리 저장 0.58 · 조회 0.25. 외부에서는 잘 된 편의 점수가 안 된 편보다 높을 확률 0.60
 
-| 점수대 | 편수 | 같은 시기 대비 조회 |
+| 점수대 | 편수 | 평소 대비 조회 |
 |---|---|---|
-| 85점 이상 | 21편 | 1.70배 · 저장 15.0 |
-| 65~84점 | 59편 | 0.97배 · 저장 8.0 |
-| 65점 미만 | 12편 | 0.86배 · 저장 4.0 |
+| 85점 이상 | 우리 43편 | 1.43배 · 저장 13.1 |
+| 65~84점 | 86편 | 0.93배 · 저장 3.0 |
+| 65점 미만 | 9편 | 0.95배 · 저장 0.0 |
 
-한 계정(AI 소식·직장인 독자) 자료이고, 무게를 이 자료로 정했으니 같은 자료로 맞춘 값이에요. 점수는 보장이 아니라 지금까지 자료로 본 확률이에요. 나머지 검사기 여섯 개(답글·캡션·쇼츠 제목·카드뉴스·AI 티·성과 복기)는 규칙을 지켰는지 보는 점검기이고, 성과 자료로는 아직 검증하지 않았어요. 검증 방법과 특징별 표: `skills/th-post/references/validation.md`, `skills/ig-reel/references/validation.md`.
+**쇼츠 제목 검사기 (외부 23개 채널 2,314편)** — 순위상관 0.13. 제목은 조회에 주는 영향이 작아요. 어떤 제목 특징도 1.2배를 못 넘었어요
+
+| 점수대 | 편수 | 평소 대비 조회 |
+|---|---|---|
+| 88점 이상 | 143편 | 1.25배 |
+| 72점 이하 | 108편 | 0.82배 |
+
+무게를 이 자료를 보고 정했으니 같은 자료로 맞춘 값이에요. 숫자가 말해 주듯 글의 꼴이 조회를 설명하는 몫은 일부이고, 점수는 보장이 아니라 손해를 피하고 확률을 조금 올리는 도구예요. 나머지 검사기 다섯 개(답글·캡션·카드뉴스·AI 티·성과 복기)는 규칙을 지켰는지 보는 점검기이고 성과 자료로는 아직 검증하지 않았어요. 검증 방법과 특징별 표: `skills/th-post/references/validation.md`, `skills/ig-reel/references/validation.md`, `skills/yt-short/references/validation.md`.
 
 ## 고치기 전 → 후
-**쓰레드 글** — `th_check.mjs` 50점 → 82점. 실제 글 2026-10-28. 전은 올린 지 41분에 좋아요 1. 후에 남은 감점은 '단정 한 줄 없음'
+**쓰레드 글** — `th_check.mjs` 57점 → 75점. 실제 글 2026-10-28. 전은 올린 지 41분에 좋아요 1. 후에 남은 감점은 단정 한 줄과 답글로 넘기기
 
 슬롭
 > 레딧에서 화제가 된 괴수 영상, 미니맥스 Hailuo로 만들었다고 합니다
@@ -54,11 +61,11 @@ npx skills add aikoreaclub/skills --skill th-post       # 하나만 / one
 > 
 > 영상으로 보고 싶은 장면 하나 대 봐
 
-- 첫 줄 36자 "~합니다" → 30자 안팎 "~만듦"
 - 뒤집는 줄 없음 → "근데 댓글 1등은…"
-- 낯선 말 다섯(레딧·미니맥스·토막·설명 글·돈 내는 사이트) → 0, 본문 링크 제거
+- 첫 줄 32자 → 30자 안, 본문 링크 제거
+- 낯선 말 다섯(레딧·미니맥스·토막·설명 글·돈 내는 사이트) → 0
 
-**릴스·쇼츠 대본** — `hook_score.mjs` 46점 → 89점. 같은 소재(워킹맘의 AI 영화)로 쓴 두 대본, 40초 기준. 후에 남은 감점은 '사람이 둘째 장면에야 나옴'
+**릴스·쇼츠 대본** — `hook_score.mjs` 70점 → 90점. 같은 소재(워킹맘의 AI 영화)로 쓴 두 대본, 40초 기준. 후에 남은 감점은 '사람과 결과가 첫 문장에 없음'
 
 슬롭
 > 오늘은 AI 영화 제작에 대해 알아보겠습니다.
@@ -78,9 +85,9 @@ npx skills add aikoreaclub/skills --skill th-post       # 하나만 / one
 > 그런데 올해 5월, 16년 다닌 회사를 나왔어요.
 > 그러니까 첫 장면의 '퇴근하고'요, 이분한텐 이제 퇴근이 없습니다.
 
-- "알아보겠습니다"로 여는 설명 → 사람이 해낸 이야기
-- "그리고" 나열 → "그런데·근데"로 여러 번 뒤집기
-- 따라 할 것 없음 → 저장할 한 줄 고정, 질문 끝 → 반전 끝
+- 뒤집기 0번 → "그런데·근데" 여러 번
+- 따라 할 것 없음 → 저장할 한 줄 고정
+- 설명 나열 → 한 사람이 해낸 이야기
 
 **카드뉴스 10장** — `carousel_html.mjs --check` 0점 → 72점. 규칙 점검 점수예요(성과 자료로는 아직 검증 전). 후는 사진 자리표시 4장 감점이 남은 상태
 
@@ -107,12 +114,12 @@ AI가 쓴 티 나는 쓰레드 글·릴스 대본·카드뉴스를 실제로 퍼
 
 | 명령 | 하는 일 | 실제로 도는 스크립트 |
 |---|---|---|
-| [`/th-post`](skills/th-post/) | 소식이나 자료를 받아 한국어 쓰레드에서 퍼지는 글로 다시 써요. | `th_check.mjs` |
+| [`/th-post`](skills/th-post/) | 소식이나 자료를 받아 한국어 쓰레드 글로 다시 써요. | `th_check.mjs` |
 | [`/th-reply`](skills/th-reply/) | 내 글에 달린 답글마다 그 사람 말을 받아 1~2줄로 답해요. | `reply_check.mjs` |
-| [`/ig-reel`](skills/ig-reel/) | 소식이나 팁을 한 사람이 해낸 이야기로 써요. | `hook_score.mjs` |
+| [`/ig-reel`](skills/ig-reel/) | 소식이나 팁을 30~60초 대본으로 써요. | `hook_score.mjs` |
 | [`/ig-carousel`](skills/ig-carousel/) | 글 하나를 1080×1350 카드뉴스 10장 그림 파일로 만들어요. | `carousel_html.mjs` |
 | [`/ig-caption`](skills/ig-caption/) | 릴스·카드뉴스 캡션을 검색되고 공유되게 써요. | `caption_check.mjs` |
-| [`/yt-short`](skills/yt-short/) | 유튜브 쇼츠 제목 3~5안을 쉬운 말·큰 의미·질문형 규칙으로 쓰고 검사 스크립트로 나란히 점수 매겨요. | `title_check.mjs` |
+| [`/yt-short`](skills/yt-short/) | 쇼츠 제목 3~5안을 쓰고 손해 보는 꼴(31자 이상·돈 앞세우기·명령형)을 걸러요. | `title_check.mjs` |
 | [`/sns-plan`](skills/sns-plan/) | 소재 목록을 받아 쓰레드·릴스·카드뉴스·쇼츠 한 주 시간표를 짜요. | — |
 | [`/sns-audit`](skills/sns-audit/) | 편별 조회·저장·답글 CSV를 주면 내 계정 기준선(P25·중앙·P75), 편별 배수, 첫 줄 꼴별 중앙값, 병목(노출·시청·가치)과 다음 조치를 규칙대로 내요. | `audit.mjs` |
 | [`/sns-human`](skills/sns-human/) | 쓰레드·캡션·쇼츠 대본처럼 짧은 한국어 글의 AI 티를 20패턴 + 말끝 분포로 잡아내고, 사실은 그대로 둔 채 사람 글처럼 고쳐요. | `kr_ai_tone.mjs` |
@@ -121,7 +128,7 @@ AI가 쓴 티 나는 쓰레드 글·릴스 대본·카드뉴스를 실제로 퍼
 ## 어디서 나온 규칙인가
 - 한국어 AI·IT·직장 쓰레드 바이럴 49편(조회 4만+ 16편 vs 1천 미만 12편) + 전체 분야 47편 — 글 페이지에서 조회·답글·공유를 직접 읽었습니다. `skills/th-post/references/first-lines.md`
 - 조회 50만 넘은 한국어 AI·업무 쇼츠 82편 — 첫 문장 유형·길이·말 속도·컷 간격·자막 위치를 측정했습니다. `skills/ig-reel/references/hooks.md`
-- 우리 계정 쓰레드 93편·릴스 92편 — 검사기 무게를 정하고 검증한 자료. 특징이 있는 글과 없는 글의 조회 배수·저장을 표로 넣었습니다(각 스킬 references/validation.md).
+- 우리 세 계정 쓰레드 120편·릴스 138편, 외부 쓰레드 25개 계정 297편, 외부 쇼츠 23개 채널(대본 228편·제목 2,314편) — 검사기 무게를 정하고 검증한 자료. 특징이 있는 글과 없는 글의 조회 배수·저장을 표로 넣었습니다(각 스킬 references/validation.md).
 - 각 스킬 폴더의 `examples/01.md` 는 그 스킬을 실제로 돌린 결과를 고치지 않고 실은 것입니다. 실행 증거 없는 스킬은 올리지 않습니다.
 
 한국어 설명과 회원 전용 스킬(정부 AI 지원사업 찾기, 마케터 프롬프트 52개, AI 직원 8명 팀): **https://aikoreaclub.com/skills/**
