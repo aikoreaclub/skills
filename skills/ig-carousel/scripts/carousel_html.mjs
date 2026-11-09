@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // 인스타 캐러셀 10장 만들기 — slides.json → 한 파일 HTML(1080×1350, 장마다 다른 판) → 가능하면 PNG 10장.
-// 사용: node carousel_html.mjs slides.json [출력폴더]      PNG는 playwright-core(또는 playwright)가 설치돼 있을 때만 만들고, 없으면 HTML만 만든다(브라우저에서 열어 장마다 캡처).
+// 사용: node carousel_html.mjs slides.json [출력폴더] [--check]   --check 는 슬롭 검사만 하고 파일을 만들지 않는다. PNG는 playwright-core(또는 playwright)가 설치돼 있을 때만 만들고, 없으면 HTML만 만든다(브라우저에서 열어 장마다 캡처).
 // slides.json 예시는 ../references/slides.example.json. 장 필드: layout(cover|photo|accent|dark-list|quote|steps|save), kicker, title, body(줄바꿈 \n), items[], img(파일 경로나 URL), source
 import fs from "node:fs"; import path from "node:path"; import { createRequire } from "node:module";
 const [, , inFile, outDir = "carousel_out"] = process.argv; if (!inFile) { console.error("사용: node carousel_html.mjs slides.json [출력폴더]"); process.exit(1); }
@@ -41,6 +41,23 @@ h1{font-size:92px;font-weight:900;line-height:1.12;letter-spacing:-.02em}h2{font
 .quote{justify-content:flex-end;color:#fff;background-size:cover;background-position:center;background-color:${T.ink}}blockquote{font-size:66px;font-weight:900;line-height:1.2}
 .steps .step{margin-top:40px;font-size:40px;line-height:1.5;padding:34px 40px;border-radius:24px;background:#f3f1ec;border-left:14px solid ${T.accent}}
 .save{justify-content:center;align-items:flex-start;background:#f6f4ee}.save h2{font-size:84px}.cta{margin-top:60px;padding:28px 44px;border-radius:999px;background:${T.ink};color:#fff;font-size:34px;font-weight:800}`;
+// 슬롭 검사: 장마다 같은 판·글자만 있는 장·줄표 나열·"무엇: 무엇" 제목·이모지·긴 제목·저장 장 없음
+const slop = []; const layouts = S.map((x, i) => x.layout || (i === 0 ? "cover" : i === S.length - 1 ? "save" : ["photo", "accent", "dark-list", "quote", "steps"][i % 5]));
+let same = 0; for (let i = 1; i < layouts.length; i++) if (layouts[i] === layouts[i - 1]) same++; if (same) slop.push([same * 8, `연달아 같은 판 ${same}번(장마다 배치를 바꾼다)`]);
+if (new Set(layouts).size <= 2 && S.length >= 5) slop.push([20, `판이 ${new Set(layouts).size}종뿐. 7종 중 4종 이상 섞기`]);
+const noPic = S.filter((x, i) => !x.img && !["cover", "save", "accent", "dark-list"].includes(layouts[i])).length; if (noPic >= 3) slop.push([Math.min(20, noPic * 5), `사진 없는 사진 판 ${noPic}장(빗금 자리표시가 그대로 나간다)`]);
+const allText = S.map((x) => [x.kicker, x.title, x.body, ...(x.items || [])].filter(Boolean).join("\n")).join("\n");
+const dash = (allText.match(/—|–/g) || []).length; if (dash) slop.push([Math.min(15, dash * 5), `줄표(—) ${dash}개(SNS 글에선 쉼표나 줄바꿈으로)`]);
+const colon = S.filter((x) => /^[^:：\n]{2,14}[:：]\s?\S/.test(x.title || "")).length; if (colon) slop.push([colon * 6, `"무엇: 무엇" 제목 ${colon}장`]);
+const emo = (allText.match(/\p{Extended_Pictographic}/gu) || []).length; if (emo > 2) slop.push([Math.min(12, (emo - 2) * 3), `이모지 ${emo}개(제목 장식 이모지는 AI 티)`]);
+const longT = S.filter((x) => (x.title || "").replace(/\s/g, "").length > 36).length; if (longT) slop.push([longT * 5, `제목 36자 넘는 장 ${longT}장(두세 줄, 15자 안팎씩)`]);
+const period = S.filter((x) => /[.。]$/.test((x.title || "").trim())).length; if (period) slop.push([period * 2, `제목 끝 마침표 ${period}장`]);
+if (!layouts.includes("save")) slop.push([10, "저장·팔로우·공유 장이 없다"]);
+if (S.length < 7 || S.length > 12) slop.push([10, `${S.length}장. 10장 기준(1 표지 / 2~3 무슨 일 / 4~9 한 장 한 메시지 / 10 저장)`]);
+if (/(결론적으로|시사하는 바|첫째|둘째|다양한|혁신적인|~를 통해|을 통해|를 통해)/.test(allText)) slop.push([10, "AI 관용구·번역투(결론적으로·첫째·다양한·~를 통해)"]);
+const slopScore = Math.max(0, 100 - slop.reduce((a, [p]) => a + p, 0));
+console.log(`슬롭 검사  ${slopScore}점 — ${slopScore >= 85 ? "올려도 됨" : slopScore >= 65 ? "표시된 장 손보기" : "다시 짜기"}`); for (const [p, w] of slop) console.log(`▼ (-${p}) ${w}`); console.log(`판 순서: ${layouts.join(" → ")}`);
+if (process.argv.includes("--check")) process.exit(0);
 const html = `<!doctype html><html lang="ko"><head><meta charset="utf-8"><title>${esc(d.title || "캐러셀")}</title><style>${css}</style></head><body>${S.map(slide).join("\n")}</body></html>`;
 fs.writeFileSync(path.join(outDir, "carousel.html"), html);
 console.log(`HTML: ${path.join(outDir, "carousel.html")} (${S.length}장)`); for (const w of warn) console.log("주의: " + w);
